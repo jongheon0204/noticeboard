@@ -1,5 +1,6 @@
 package com.jongheon.www.noticeboard.controller;
 
+import com.jongheon.www.noticeboard.cache.MemberCache;
 import com.jongheon.www.noticeboard.cipher.SHA256;
 import com.jongheon.www.noticeboard.domain.entity.Member;
 import com.jongheon.www.noticeboard.domain.repository.MemberRepository;
@@ -34,11 +35,15 @@ class MemberControllerTest {
     private MemberRepository memberRepository;
 
     @Autowired
+    private MemberCache memberCache;
+
+    @Autowired
     private SHA256 sha256;
 
     // DB에 저장되어 있는 모든 데이터 삭제
     private void deleteAllData() {
         memberRepository.deleteAll();
+        memberCache.cachePreDestroy();
     }
 
     // DB에 임의의 데이터 넣기
@@ -48,6 +53,7 @@ class MemberControllerTest {
             throw new Exception();
         }
         memberRepository.save(Member.builder().memberId(memberId).memberPwd(encryptedPwd.get()).build());
+        memberCache.addNewMember(memberId);
     }
 
     // TODO : JPA에 실제로 값을 넣지 않도록 하는 방법을 찾아보기
@@ -134,7 +140,7 @@ class MemberControllerTest {
                 .param("change_pwd", changePwd))
                 .andDo(print())
                 .andExpect(status().isOk())
-                .andExpect(content().string("Change Member Information"))
+                .andExpect(content().string("Change Member Password Success"))
                 .andReturn();
     }
 
