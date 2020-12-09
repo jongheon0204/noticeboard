@@ -32,4 +32,8 @@ public class Member {
     @LastModifiedDate
     @Column(nullable = false)
     private LocalDateTime lastVisitedAt;
+
+    public void setMemberPwd(final String memberPwd){
+        this.memberPwd = memberPwd;
+    }
 }

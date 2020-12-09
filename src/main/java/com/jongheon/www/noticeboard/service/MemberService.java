@@ -3,6 +3,7 @@ package com.jongheon.www.noticeboard.service;
 import com.jongheon.www.noticeboard.cipher.SHA256;
 import com.jongheon.www.noticeboard.domain.entity.Member;
 import com.jongheon.www.noticeboard.domain.repository.MemberRepository;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -10,6 +11,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.Optional;
 
+@Slf4j
 @Service
 public class MemberService {
 
@@ -32,13 +34,13 @@ public class MemberService {
             return new ResponseEntity<>("ID Already Exist", HttpStatus.NOT_FOUND);
         }
 
-        Optional<String> encryptedPwd = sha256.Encrypt(memberId+memberPwd);
-        if(encryptedPwd.isEmpty()){
+        Optional<String> memberPwdEncrypted = sha256.Encrypt(memberId+memberPwd);
+        if(memberPwdEncrypted.isEmpty()){
             return new ResponseEntity<>("Encrypt Error", HttpStatus.NOT_FOUND);
         }
 
         memberRepository.save(Member.builder()
-                .memberId(memberId).memberPwd(encryptedPwd.get()).build());
+                .memberId(memberId).memberPwd(memberPwdEncrypted.get()).build());
 
         return new ResponseEntity<>("SignUp Success", HttpStatus.OK);
     }
@@ -55,17 +57,39 @@ public class MemberService {
     public ResponseEntity<String> SignIn(final String memberId, final String memberPwd) {
         Optional<Member> member = memberRepository.findById(memberId);
 
-        Optional<String> encryptedMsg = sha256.Encrypt(memberId+memberPwd);
-        if(encryptedMsg.isEmpty()){
+        Optional<String> memberPwdEncrypted = sha256.Encrypt(memberId+memberPwd);
+        if(memberPwdEncrypted.isEmpty()){
             return new ResponseEntity<>("Encrypt Error", HttpStatus.NOT_FOUND);
         }
 
         return member.map(mem -> {
-            if(mem.getMemberPwd().equals(encryptedMsg.get())){
+            if(mem.getMemberPwd().equals(memberPwdEncrypted.get())){
                 return new ResponseEntity<>("SignIn Success", HttpStatus.OK);
             }else{
                 return new ResponseEntity<>("SignIn Fail", HttpStatus.NOT_FOUND);
             }
         }).orElseGet(() -> new ResponseEntity<>("Wrong Member ID", HttpStatus.NOT_FOUND));
+    }
+
+    public ResponseEntity<String> ModifyUserInfo(String memberId, String memberPwd, String changePwd) {
+        Optional<Member> member = memberRepository.findById(memberId);
+        if(member.isEmpty()){
+            return new ResponseEntity<>("Wrong Member ID", HttpStatus.NOT_FOUND);
+        }
+
+        Optional<String> memberPwdEncrypted = sha256.Encrypt(memberId+memberPwd);
+        Optional<String> changePwdEncrypted = sha256.Encrypt(memberId+changePwd);
+        if(memberPwdEncrypted.isEmpty() || changePwdEncrypted.isEmpty()){
+            return new ResponseEntity<>("Encrypt Error", HttpStatus.NOT_FOUND);
+        }
+
+        if(!member.get().getMemberPwd().equals(memberPwdEncrypted.get())){
+            return new ResponseEntity<>("Wrong Member Password", HttpStatus.NOT_FOUND);
+        }
+
+        member.get().setMemberPwd(changePwdEncrypted.get());
+        Member changedMember = memberRepository.save(member.get());
+        log.info("Member is equals ? " + member.get().equals(changedMember));
+        return new ResponseEntity<>("Change Member Information", HttpStatus.OK);
     }
 }
