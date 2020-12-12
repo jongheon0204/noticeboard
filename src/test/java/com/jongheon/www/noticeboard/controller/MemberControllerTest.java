@@ -24,7 +24,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 class MemberControllerTest {
 
-    private static final String memberId = "memberId";
+    private static final String memberId = "memberId@naver.com";
     private static final String memberPwd = "memberPwd";
     private static final String changePwd = "changePwd";
 
