@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="kr">
+<html lang="kr" xmlns:th="http://www.thymeleaf.org">
 
 <head>
 
@@ -38,7 +38,8 @@
             <a class="nav-link" href="/">Home</a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="/login">Login</a>
+            <a th:if="${name}" th:text="${name}" href="#"></a>
+            <a th:unless="${name}" th:text="Login" href="/login"></a>
           </li>
         </ul>
       </div>

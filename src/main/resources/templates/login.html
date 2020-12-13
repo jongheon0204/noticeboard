@@ -10,23 +10,23 @@
 <body>
     <div class="container" id="container">
         <div class="form-container sign-up-container">
-            <form action="/sign_up" method="POST">
+            <form action="/sign_up" method="post">
                 <h1>Create Account</h1>
                 <span>or use your email for registration</span>
                 <input type="text" placeholder="Name" name="name"/>
-                <input type="email" placeholder="Email" name="member_id"/>
-                <input type="password" placeholder="Password" name="member_pwd"/>
-                <button>Sign Up</button>
+                <input id="sign_up_id" type="email" placeholder="Email" name="member_id"/>
+                <input id="sign_up_pwd" type="password" placeholder="Password" name="member_pwd"/>
+                <button id="sign_up" type="button">Sign Up</button>
             </form>
         </div>
         <div class="form-container sign-in-container">
-            <form action="/sign_in" method="POST">
+            <form action="/sign_in" method="post">
                 <h1>Sign in</h1>
                 <span>or use your account</span>
-                <input type="email" placeholder="Email" name="member_id"/>
-                <input type="password" placeholder="Password" name="member_pwd"/>
+                <input id="sign_in_id" type="email" placeholder="Email" name="member_id"/>
+                <input id="sign_in_pwd" type="password" placeholder="Password" name="member_pwd"/>
                 <a href="#">Forgot your password?</a>
-                <button>Sign In</button>
+                <button id="sign_in" type="button">Sign In</button>
             </form>
         </div>
         <div class="overlay-container">
@@ -34,17 +34,18 @@
                 <div class="overlay-panel overlay-left">
                     <h1>Welcome Back!</h1>
                     <p>To keep connected with us please login with your personal info</p>
-                    <button class="ghost" id="signIn">Sign In</button>
+                    <button class="ghost" id="sign_in_ghost">Sign In</button>
                 </div>
                 <div class="overlay-panel overlay-right">
                     <h1>Hello, Friend!</h1>
                     <p>Enter your personal details and start journey with us</p>
-                    <button class="ghost" id="signUp">Sign Up</button>
+                    <button class="ghost" id="sign_up_ghost">Sign Up</button>
                 </div>
             </div>
         </div>
     </div>
 
+    <script src="vendor/jquery/jquery.min.js"></script>
     <script src="js/login.js"></script>
 </body>
 </html>

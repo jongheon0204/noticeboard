@@ -10,6 +10,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import javax.servlet.http.HttpSession;
 import java.util.Optional;
 
 @Slf4j
@@ -24,6 +25,9 @@ public class MemberService {
 
     @Autowired
     private SHA256 sha256;
+
+    @Autowired
+    private HttpSession httpSession;
 
     /**
      * 회원가입 메서드
@@ -83,6 +87,7 @@ public class MemberService {
         return member.map(mem -> {
             if(mem.getMemberPwd().equals(memberPwdEncrypted.get())){
                 memberCache.resetFailCount(memberId);
+                httpSession.setAttribute("Member", memberId);
                 return new ResponseEntity<>("SignIn Success", HttpStatus.OK);
             }else{
                 memberCache.addFailCount(memberId);
