@@ -38,4 +38,14 @@ public class PostService {
                 .map(post -> new ResponseEntity<>(post, HttpStatus.OK))
                 .orElse(new ResponseEntity<>(null, HttpStatus.NOT_FOUND));
     }
+
+    public ResponseEntity<String> Revise(PostRequestDto postRequestDto) {
+        return postRepository.findById(postRequestDto.getId())
+                .map(post -> {
+                    post.setContent(postRequestDto.getContent());
+                    post.setTitle(postRequestDto.getTitle());
+                    postRepository.save(post);
+                    return new ResponseEntity("Post Update Success", HttpStatus.OK);
+                }).orElse(new ResponseEntity<>("Post Update Fail", HttpStatus.BAD_REQUEST));
+    }
 }

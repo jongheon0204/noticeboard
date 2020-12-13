@@ -14,6 +14,8 @@ import javax.validation.constraints.NotEmpty;
 @AllArgsConstructor
 public class PostRequestDto {
 
+    private Long id;
+
     @Email
     @NotEmpty
     private String memberId;

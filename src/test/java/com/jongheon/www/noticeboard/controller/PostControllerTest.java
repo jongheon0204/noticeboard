@@ -12,8 +12,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -57,4 +56,18 @@ class PostControllerTest {
                 .andExpect(status().isOk())
                 .andReturn();
     }
+
+    @Test
+    void update() throws Exception{
+        String ct = objectMapper.writeValueAsString(
+                PostRequestDto.builder().id(2L).memberId(memberId).title(title).content("cococo").build());
+
+        mockMvc.perform(put("/post")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(ct))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(content().string("Post Update Success"));
+    }
+
 }

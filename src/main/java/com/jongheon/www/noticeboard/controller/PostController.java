@@ -25,4 +25,9 @@ public class PostController {
     public ResponseEntity<Post> read(@RequestParam("id") Long id){
         return postService.ReadById(id);
     }
+
+    @PutMapping("")
+    public ResponseEntity<String> update(@RequestBody PostRequestDto postRequestDto){
+        return postService.Revise(postRequestDto);
+    }
 }
