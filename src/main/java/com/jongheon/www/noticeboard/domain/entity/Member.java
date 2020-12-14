@@ -10,6 +10,8 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import javax.persistence.*;
 import javax.validation.constraints.Email;
+import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.Size;
 import java.time.LocalDateTime;
 
 @Getter
@@ -23,9 +25,6 @@ public class Member {
     @Id @Email
     private String memberId;
 
-    @Column(nullable = false)
-    private String memberPwd;
-
     @CreatedDate
     @Column(nullable = false)
     private LocalDateTime createdAt;
@@ -34,7 +33,16 @@ public class Member {
     @Column(nullable = false)
     private LocalDateTime lastVisitedAt;
 
-    public void setMemberPwd(final String memberPwd){
-        this.memberPwd = memberPwd;
+    @NotEmpty
+    @Size(max = 30)
+    @Column(nullable = false)
+    private String name;
+
+    @NotEmpty
+    @Column(nullable = false)
+    private String password;
+
+    public void setPassword(String password) {
+        this.password = password;
     }
 }

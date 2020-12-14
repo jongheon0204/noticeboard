@@ -21,6 +21,7 @@ if (sign_up_btn) {
     console.log("test");
     let data = new FormData();
     console.log(document.getElementById("sign_up_id").value);
+    data.append("member_name", document.getElementById("sign_up_name").value);
     data.append("member_id", document.getElementById("sign_up_id").value);
     data.append("member_pwd", document.getElementById("sign_up_pwd").value);
     console.log("data : ", data);

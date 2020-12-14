@@ -20,13 +20,15 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+// TODO : yml 혹은 properties 파일을 통해 상수 값 사용하기
 @SpringBootTest
 @AutoConfigureMockMvc
 class MemberControllerTest {
 
     private static final String memberId = "memberId@naver.com";
-    private static final String memberPwd = "memberPwd";
-    private static final String changePwd = "changePwd";
+    private static final String password = "password";
+    private static final String changePwd = "changedPwd";
+    private static final String name = "name";
 
     @Autowired
     private MockMvc mockMvc;
@@ -48,11 +50,14 @@ class MemberControllerTest {
 
     // DB에 임의의 데이터 넣기
     private void insertMemberData() throws Exception{
-        Optional<String> encryptedPwd = sha256.Encrypt(memberId+memberPwd);
+        Optional<String> encryptedPwd = sha256.Encrypt(memberId+password);
         if(encryptedPwd.isEmpty()){
             throw new Exception();
         }
-        memberRepository.save(Member.builder().memberId(memberId).memberPwd(encryptedPwd.get()).build());
+        memberRepository.save(Member.builder()
+                .memberId(memberId)
+                .password(encryptedPwd.get())
+                .name(name).build());
         memberCache.addNewMember(memberId);
     }
 
@@ -67,10 +72,11 @@ class MemberControllerTest {
         // 회원가입 기능이 제대로 되는지 확인
         mockMvc.perform(post("/sign_up")
                 .param("member_id", memberId)
-                .param("member_pwd", memberPwd))
+                .param("member_pwd", password)
+                .param("member_name", name))
                 .andDo(print())
                 .andExpect(status().isOk())
-                .andExpect(content().string("SignUp Success"));
+                .andExpect(content().string("회원가입에 성공하였습니다"));
     }
 
     @Test
@@ -80,10 +86,11 @@ class MemberControllerTest {
         // 아이디가 중복된 경우 "ID Already Exist", Not Found를 반환하는지 검사
         mockMvc.perform(post("/sign_up")
                 .param("member_id", memberId)
-                .param("member_pwd", memberPwd))
+                .param("member_pwd", password)
+                .param("member_name", name))
                 .andDo(print())
                 .andExpect(status().isNotFound())
-                .andExpect(content().string("ID Already Exist"));
+                .andExpect(content().string("존재하는 아이디 입니다"));
     }
 
     @Test
@@ -93,10 +100,10 @@ class MemberControllerTest {
         // 로그인 기능이 제대로 수행되는지 검사
         MvcResult mvcResult = mockMvc.perform(post("/sign_in")
                 .param("member_id", memberId)
-                .param("member_pwd", memberPwd))
+                .param("member_pwd", password))
                 .andDo(print())
                 .andExpect(status().isOk())
-                .andExpect(content().string("SignIn Success"))
+                .andExpect(content().string("로그인 성공"))
                 .andReturn();
     }
 
@@ -110,7 +117,7 @@ class MemberControllerTest {
                 .param("member_pwd", "WrongPwd"))
                 .andDo(print())
                 .andExpect(status().isNotFound())
-                .andExpect(content().string("SignIn Fail"))
+                .andExpect(content().string("로그인 실패"))
                 .andReturn();
 
     }
@@ -122,10 +129,10 @@ class MemberControllerTest {
         // 존재하지 않는 아이디인 경우 "Wrong Member ID", Not Found를 반환하는지 검사
         MvcResult mvcResult = mockMvc.perform(post("/sign_in")
                 .param("member_id", "WrongID")
-                .param("member_pwd", memberPwd))
+                .param("member_pwd", password))
                 .andDo(print())
                 .andExpect(status().isNotFound())
-                .andExpect(content().string("Wrong Member ID"))
+                .andExpect(content().string("존재하지 않는 아이디 입니다"))
                 .andReturn();
     }
 
@@ -136,11 +143,11 @@ class MemberControllerTest {
         // 비밀번호 변경 성공 시
         MvcResult mvcResult = mockMvc.perform(put("/member/password")
                 .param("member_id", memberId)
-                .param("member_pwd", memberPwd)
+                .param("member_pwd", password)
                 .param("change_pwd", changePwd))
                 .andDo(print())
                 .andExpect(status().isOk())
-                .andExpect(content().string("Change Member Password Success"))
+                .andExpect(content().string("비밀번호 변경 성공"))
                 .andReturn();
     }
 
@@ -155,15 +162,15 @@ class MemberControllerTest {
                 .param("change_pwd", changePwd))
                 .andDo(print())
                 .andExpect(status().isNotFound())
-                .andExpect(content().string("Wrong Member Password"));
+                .andExpect(content().string("비밀번호 오류"));
 
         // 올바르지 않은 아이디를 입력한 경우
         mockMvc.perform(put("/member/password")
                 .param("member_id", "WrongId")
-                .param("member_pwd", memberPwd)
+                .param("member_pwd", password)
                 .param("change_pwd", changePwd))
                 .andDo(print())
                 .andExpect(status().isNotFound())
-                .andExpect(content().string("Wrong Member ID"));
+                .andExpect(content().string("존재하지 않는 아이디 입니다"));
     }
 }
