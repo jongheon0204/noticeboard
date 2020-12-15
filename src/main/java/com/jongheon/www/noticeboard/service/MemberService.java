@@ -36,7 +36,7 @@ public class MemberService {
         return sha256.Encrypt(id + password)
                 .map(encryptedPwd -> {
                     Member newMember = Member.builder()
-                            .memberId(id).name(name).password(password).loginFailCnt(0).build();
+                            .memberId(id).name(name).password(encryptedPwd).loginFailCnt(0).build();
                     return memberCache.addNewMember(newMember) ?
                             new ResponseEntity<>("회원가입에 성공하였습니다", HttpStatus.OK) :
                             new ResponseEntity<>("존재하는 아이디 입니다", HttpStatus.NOT_FOUND);
@@ -57,7 +57,7 @@ public class MemberService {
                 .filter(encryptedPwd -> memberCache.isRightLoginInfo(id, encryptedPwd))
                 .map(pwd -> {
                     memberCache.resetLoginFailCnt(id);
-                    httpSession.setAttribute("Member", memberCache.getMemberInfo(id));
+                    httpSession.setAttribute("Member", memberCache.getMemberInfo(id).get());
                     return new ResponseEntity<>("로그인 성공", HttpStatus.OK);
                 }).orElseGet(() -> {
                     memberCache.addLoginFailCnt(id);

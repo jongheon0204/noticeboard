@@ -1,5 +1,6 @@
 package com.jongheon.www.noticeboard.controller;
 
+import com.jongheon.www.noticeboard.domain.entity.Member;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -16,8 +17,8 @@ public class IndexController {
 
     @GetMapping("")
     public String Index(Model model){
-        Optional.ofNullable((String)httpSession.getAttribute("Member"))
-        .ifPresent(memberId -> model.addAttribute("name", memberId));
+        Optional.ofNullable((Member)httpSession.getAttribute("Member"))
+                .ifPresent(member -> model.addAttribute("name", member.getName()));
         return "index";
     }
 

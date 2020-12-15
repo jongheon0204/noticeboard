@@ -80,10 +80,10 @@ public class MemberCache {
         members.put(id, member);
     }
 
-    public boolean isRightLoginInfo(final String id, final String encrypedPwd){
+    public boolean isRightLoginInfo(final String id, final String encryptedPwd){
         if(!isAlreadyExist(id)) return false;
         if(members.get(id).getLoginFailCnt() >= 10) return false;
-        return members.get(id).getPassword().equals(encrypedPwd);
+        return members.get(id).getPassword().equals(encryptedPwd);
     }
 
 }
