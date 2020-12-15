@@ -12,23 +12,23 @@ public class MemberController {
     private MemberService memberService;
 
     @PostMapping("sign_up")
-    public ResponseEntity<String> create(@RequestParam("member_id") final String memberId,
+    public ResponseEntity<String> create(@RequestParam("member_id") final String id,
                                          @RequestParam("member_pwd") final String password,
                                          @RequestParam("member_name") final String name){
-        return memberService.SignUp(memberId, password, name);
+        return memberService.SignUp(id, password, name);
     }
 
     @PostMapping("sign_in")
-    public ResponseEntity<String> read(@RequestParam("member_id") final String memberId,
+    public ResponseEntity<String> read(@RequestParam("member_id") final String id,
                                        @RequestParam("member_pwd") final String password){
-        return memberService.SignIn(memberId, password);
+        return memberService.SignIn(id, password);
     }
 
     @PutMapping("member/password")
-    public ResponseEntity<String> update(@RequestParam("member_id") final String memberId,
+    public ResponseEntity<String> update(@RequestParam("member_id") final String id,
                                          @RequestParam("member_pwd") final String password,
-                                         @RequestParam("change_pwd") final String changePwd){
-        return memberService.ModifyUserInfo(memberId, password, changePwd);
+                                         @RequestParam("change_pwd") final String newPassword){
+        return memberService.ModifyUserInfo(id, password, newPassword);
     }
 
 }

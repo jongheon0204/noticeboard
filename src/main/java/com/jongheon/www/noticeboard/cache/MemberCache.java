@@ -2,7 +2,6 @@ package com.jongheon.www.noticeboard.cache;
 
 import com.jongheon.www.noticeboard.domain.entity.Member;
 import com.jongheon.www.noticeboard.domain.repository.MemberRepository;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -10,19 +9,12 @@ import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
-// TODO : Member 테이블에 is_locked 컬럼을 추가하여 로그인 실패 10회 이상 시 락이 걸릴 수 있게 한다
-/**
- * 멤버 캐시를 통해 디비 접근 최소화
- * 캐시는 멤버의 아이디와 실패 횟수 정보만 가지고 있는다.
- * MemberCache 빈 생성 시 DB에서 멤버 정보를 가져와 members를 초기화
- */
-
-@Slf4j
 @Component
 public class MemberCache {
 
-    private Map<String, Integer> members;
+    private Map<String, Member> members;
 
     @Autowired
     private MemberRepository memberRepository;
@@ -30,50 +22,68 @@ public class MemberCache {
     @PostConstruct
     public void cachePostConstruct(){
         members = new HashMap<>();
-        memberRepository.findAll().stream().map(Member::getMemberId).forEach(memberId -> members.put(memberId, 0));
+        memberRepository.findAll().forEach(member -> members.put(member.getMemberId(), member));
     }
 
     @PreDestroy
     public void cachePreDestroy(){
+        members.keySet().forEach(id -> memberRepository.save(members.get(id)));
         members.clear();
     }
 
-    public void addNewMember(final String memberId){
-        if(!members.containsKey(memberId)){
-            members.put(memberId, 0);
+    public boolean isAlreadyExist(final String id){
+        return members.containsKey(id);
+    }
+
+    public Optional<Member> getMemberInfo(final String id){
+        return Optional.ofNullable(members.get(id));
+    }
+
+    public boolean addNewMember(final Member newMember){
+        if(isAlreadyExist(newMember.getMemberId())) return false;
+        memberRepository.save(newMember);
+        members.put(newMember.getMemberId(), newMember);
+        return true;
+    }
+
+    public boolean removeMember(final Member member) {
+        if (!isAlreadyExist(member.getMemberId())) return false;
+        memberRepository.delete(member);
+        members.remove(member.getMemberId());
+        return true;
+    }
+
+    public boolean updateMemberPassword(final String id, final String newPassword){
+        if(!isAlreadyExist(id)) return false;
+        Member member = members.get(id);
+        member.setPassword(newPassword);
+        memberRepository.save(member);
+        members.put(member.getMemberId(), member);
+        return true;
+    }
+
+    public void addLoginFailCnt(final String id){
+        if(!isAlreadyExist(id)) return;
+        Member member = members.get(id);
+        if(member.getLoginFailCnt() >= 10) return;
+        member.setLoginFailCnt(member.getLoginFailCnt() + 1);
+        members.put(id, member);
+        if(member.getLoginFailCnt() >= 10){
+            memberRepository.save(member);
         }
     }
 
-    public void removeMember(final String memberId){
-        members.remove(memberId);
+    public void resetLoginFailCnt(final String id){
+        if(!isAlreadyExist(id)) return;
+        Member member = members.get(id);
+        member.setLoginFailCnt(0);
+        members.put(id, member);
     }
 
-    public void addFailCount(final String memberId){
-        members.put(memberId, members.get(memberId) + 1);
-    }
-
-    public void resetFailCount(final String memberId){
-        members.put(memberId, 0);
-    }
-
-    public boolean isExistData(final String memberId){
-        return members.containsKey(memberId);
-    }
-
-    /**
-     * @return
-     * 0 : 로그인 성공
-     * 1 : 로그인 10회 실패로 인해 더 이상 로그인 할 수 없다.
-     * 2 : 입력한 아이디 값이 멤버 목록에 존재하지 않는다
-     */
-    public int isCanLogin(final String memberId){
-        if(!members.containsKey(memberId)){
-            return 2;
-        }
-        if(members.get(memberId) > 10){
-            return 1;
-        }
-        return 0;
+    public boolean isRightLoginInfo(final String id, final String encrypedPwd){
+        if(!isAlreadyExist(id)) return false;
+        if(members.get(id).getLoginFailCnt() >= 10) return false;
+        return members.get(id).getPassword().equals(encrypedPwd);
     }
 
 }

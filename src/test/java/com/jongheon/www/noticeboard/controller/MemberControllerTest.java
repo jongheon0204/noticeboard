@@ -12,14 +12,13 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
-import java.util.Optional;
-
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+// TODO : 변경된 MemberService에 맞게 Test도 업데이트 하기
 // TODO : yml 혹은 properties 파일을 통해 상수 값 사용하기
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -42,29 +41,20 @@ class MemberControllerTest {
     @Autowired
     private SHA256 sha256;
 
-    // DB에 저장되어 있는 모든 데이터 삭제
-    private void deleteAllData() {
-        memberRepository.deleteAll();
-        memberCache.cachePreDestroy();
-    }
-
     // DB에 임의의 데이터 넣기
-    private void insertMemberData() throws Exception{
-        Optional<String> encryptedPwd = sha256.Encrypt(memberId+password);
-        if(encryptedPwd.isEmpty()){
-            throw new Exception();
-        }
-        memberRepository.save(Member.builder()
-                .memberId(memberId)
-                .password(encryptedPwd.get())
-                .name(name).build());
-        memberCache.addNewMember(memberId);
+    private boolean insertMemberData(){
+        return sha256.Encrypt(memberId + password)
+                .map(encryptedPwd -> {
+                    Member newMember = Member.builder().memberId(memberId).password(password).loginFailCnt(0).build();
+                    memberCache.addNewMember(newMember);
+                    return true;
+                }).orElse(false);
     }
 
     // TODO : JPA에 실제로 값을 넣지 않도록 하는 방법을 찾아보기
     @BeforeEach
     private void beforeEach() {
-        deleteAllData();
+        memberCache.cachePreDestroy();
     }
 
     @Test

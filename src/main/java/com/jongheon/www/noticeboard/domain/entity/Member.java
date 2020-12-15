@@ -42,7 +42,14 @@ public class Member {
     @Column(nullable = false)
     private String password;
 
+    @Column(nullable = false)
+    private Integer loginFailCnt;
+
     public void setPassword(String password) {
         this.password = password;
+    }
+
+    public void setLoginFailCnt(Integer loginFailCnt) {
+        this.loginFailCnt = loginFailCnt;
     }
 }
